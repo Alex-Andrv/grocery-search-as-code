@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search as code · метрики</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafaf9;--card:#fff;--fg:#141413;--mut:#8a8984;--bd:#ecebe7;--a:#c2643b;--b:#178a63;--soft:#f3f2ef}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121211;--card:#1b1b1a;--fg:#f0efea;--mut:#8f8e88;--bd:#2a2927;--a:#e5895f;--b:#4fd1a1;--soft:#232321}}
+:root[data-theme=dark]{--bg:#121211;--card:#1b1b1a;--fg:#f0efea;--mut:#8f8e88;--bd:#2a2927;--a:#e5895f;--b:#4fd1a1;--soft:#232321}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 Inter,-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:960px;margin:0 auto;padding:0 20px 80px}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+header b{font-weight:600}
+a{color:var(--mut);text-decoration:none}a:hover{color:var(--fg)}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:48px 0 64px;text-align:center}
+.kpi .v{font-size:48px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.kpi .l{color:var(--mut);font-size:14px}
+h2{font-size:18px;font-weight:600;letter-spacing:-.01em;margin:56px 0 4px}
+.sub{color:var(--mut);font-size:13.5px;margin:0 0 16px}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--mut);margin-bottom:8px}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.hb{display:grid;grid-template-columns:190px 1fr 56px;gap:8px 12px;align-items:center;font-size:13.5px}
+.hb .t{height:10px;border-radius:999px;transition:width 1s cubic-bezier(.2,.8,.2,1);width:0}
+.hb .n{text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+.grp{grid-column:1/-1;color:var(--mut);font-size:12px;margin-top:10px}
+.ex{border-top:1px solid var(--bd);padding:20px 0}
+.ex .qq{font-weight:500;margin-bottom:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.side .h{font-size:12.5px;color:var(--mut);display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.side .h b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+.side .ans{font-size:13.5px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.thumbs{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.thumbs img{width:52px;height:52px;object-fit:contain;background:#fff;border:1px solid var(--bd);border-radius:8px}
+.note{color:var(--mut);font-size:12.5px;margin-top:48px}
+@media (max-width:760px){.kpis{grid-template-columns:1fr;gap:28px}.two{grid-template-columns:1fr}.hb{grid-template-columns:120px 1fr 48px}}
+</style>
+</head>
+<body>
+<main>
+<header><b>Search as code</b><span><a style="cursor:pointer;margin-right:18px" onclick="startTour()">▶ Тур</a><a href="/">← Демо</a></span></header>
+<div class="kpis" id="kpis"></div>
+<h2>Токены на запрос</h2><p class="sub">Обычный агент читает каждую карточку сам; программа отдаёт модели только сводку</p>
+<div class="legend"><span><i style="background:var(--a)"></i>Tool calling</span><span><i style="background:var(--b)"></i>Search as code</span></div>
+<div class="hb" id="tok"></div>
+<h2>Качество кандгенов</h2><p class="sub" id="retsub"></p>
+<div class="legend"><span><i style="background:var(--a)"></i>Базовые</span><span><i style="background:var(--b)"></i>Наши</span></div>
+<div class="hb" id="ret"></div>
+<h2>Ранкер</h2><p class="sub">Кросс-энкодер, дообученный на разметке учителя</p>
+<div class="hb" id="extra"></div>
+<h2>Примеры</h2><p class="sub">Один и тот же запрос — два агента</p>
+<div id="ex"></div>
+<p class="note" id="note"></p>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => Math.round(n).toLocaleString("ru-RU");
+const bar = (label, v, mx, color, txt) => `<span>${esc(label)}</span><div class="t" data-w="${100 * v / mx}" style="background:${color}"></div><span class="n">${txt}</span>`;
+function countUp(el, to, f) { const t0 = performance.now(); const s = t => { const k = Math.min(1, (t - t0) / 1100); el.textContent = f(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(s); }; requestAnimationFrame(s); }
+fetch("/showcase.json").then(r => r.json()).then(d => {
+  const s = d.single, R = d.retrieval.methods, nd = k => R.find(m => m.key === k).ndcg10;
+  const K = [{v: s.baseline.tokens_total / s.code.tokens_total, f: x => x.toFixed(1) + "×", l: "меньше токенов"},
+             {v: s.code.judge, f: x => x.toFixed(1), l: `оценка судьи, у обычного ${s.baseline.judge.toFixed(1)}`},
+             {v: 100 * (nd("hybrid") / nd("dense") - 1), f: x => "+" + Math.round(x) + "%", l: "качество поиска (nDCG@10)"}];
+  $("#kpis").innerHTML = K.map((k, i) => `<div class="kpi"><div class="v" id="k${i}">0</div><div class="l">${esc(k.l)}</div></div>`).join("");
+  K.forEach((k, i) => countUp($("#k" + i), k.v, k.f));
+  const types = Object.keys(s.baseline.by_type), mx = Math.max(...types.map(t => s.baseline.by_type[t].tokens_total));
+  $("#tok").innerHTML = types.map(t => `<div class="grp">${esc(t)} запрос</div>` + bar("Tool calling", s.baseline.by_type[t].tokens_total, mx, "var(--a)", fmt(s.baseline.by_type[t].tokens_total)) + bar("Search as code", s.code.by_type[t].tokens_total, mx, "var(--b)", fmt(s.code.by_type[t].tokens_total))).join("");
+  const show = ["bm25", "dense", "maxsim", "dense_ft", "hybrid"];
+  $("#retsub").textContent = `nDCG@10 на ${d.retrieval.n_queries} тестовых запросах`;
+  $("#ret").innerHTML = R.filter(m => show.includes(m.key)).map(m => bar(m.name, m.ndcg10, 1, m.group === "base" ? "var(--a)" : "var(--b)", m.ndcg10.toFixed(2))).join("");
+  const rr = d.rerank, vf = d.verify && d.verify.sft;
+  $("#extra").innerHTML = (rr ? `<div class="grp">ранкер bge-reranker-v2-m3, nDCG@10</div>` + bar("Zero-shot", rr.reranker_zero_shot_ndcg10, 1, "var(--a)", rr.reranker_zero_shot_ndcg10.toFixed(2)) + bar("Дообученный", rr.reranker_ft_ndcg10, 1, "var(--b)", rr.reranker_ft_ndcg10.toFixed(2)) : "")
+    ;
+  const tk = t => t.reduce((a, x) => a + x.usage.in + x.usage.out, 0);
+  $("#ex").innerHTML = (d.examples || []).slice(0, 6).map(e => `<div class="ex"><div class="qq">${esc(e.title)}</div><div class="two">` +
+    [["base", "Tool calling", "var(--a)"], ["ours", "Search as code", "var(--b)"]].map(([k, n, c]) => { const t = e[k][e[k].length - 1];
+      return `<div class="side"><div class="h"><i style="width:8px;height:8px;border-radius:50%;background:${c};display:inline-block"></i>${n} · <b>${fmt(tk(e[k]))}</b> токенов</div>
+        <div class="ans">${esc((t.answer || "").replace(/ВЫБОР\s*:.*$/s, "").replace(/\*\*/g, "").trim())}</div>
+        <div class="thumbs">${(t.products || []).slice(0, 6).map(p => p.image ? `<img loading="lazy" src="${esc(p.image)}" title="${esc(p.name)}" alt="">` : "").join("")}</div></div>`; }).join("") + `</div></div>`).join("");
+  $("#note").textContent = "Каталог — 33,6 тыс. российских товаров Open Food Facts; цены синтетические. Оценки — Qwen3-30B как судья; разметка кандгенов — тем же учителем.";
+  requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll("[data-w]").forEach(b => b.style.width = b.dataset.w + "%")));
+});
+</script>
+<script src="/tour.js"></script>
+</body>
+</html>

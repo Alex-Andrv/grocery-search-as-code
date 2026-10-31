@@ -1,0 +1,68 @@
+{
+ "baseline": {
+  "n": 20,
+  "errors": 0,
+  "tokens_in": 6875,
+  "tokens_out": 317.05,
+  "tokens_total": 7192.1,
+  "llm_calls": 3.6,
+  "wall_sec": 5.513,
+  "judge": 3.05,
+  "coverage": 0.613,
+  "violations_per_query": 0.15,
+  "unverified_per_query": 0,
+  "hallucinated_per_query": 0,
+  "brand_hit": 0.5,
+  "by_type": {
+   "с условиями": {
+    "tokens_total": 7264.7,
+    "judge": 2.5
+   },
+   "сценарный": {
+    "tokens_total": 9272.8,
+    "judge": 2.8
+   },
+   "точный": {
+    "tokens_total": 2021.2,
+    "judge": 4
+   },
+   "широкий": {
+    "tokens_total": 10945.8,
+    "judge": 3
+   }
+  }
+ },
+ "code": {
+  "n": 20,
+  "errors": 0,
+  "tokens_in": 1538.25,
+  "tokens_out": 269.5,
+  "tokens_total": 1807.8,
+  "llm_calls": 2.1,
+  "wall_sec": 4.255,
+  "judge": 3.6,
+  "coverage": 1.0,
+  "violations_per_query": 0.05,
+  "unverified_per_query": 0.1,
+  "hallucinated_per_query": 0,
+  "brand_hit": 1,
+  "by_type": {
+   "с условиями": {
+    "tokens_total": 1770.2,
+    "judge": 3
+   },
+   "сценарный": {
+    "tokens_total": 1919,
+    "judge": 3.2
+   },
+   "точный": {
+    "tokens_total": 1446.6,
+    "judge": 5
+   },
+   "широкий": {
+    "tokens_total": 2176.5,
+    "judge": 3.25
+   }
+  }
+ }
+}

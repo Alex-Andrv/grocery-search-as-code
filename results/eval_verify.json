@@ -1,0 +1,11 @@
+{
+ "sft": {
+  "n": 355,
+  "agree_teacher": 0.958,
+  "agree_rule": 0.946,
+  "missed_violations": "0/10",
+  "parse_errors": 7,
+  "teacher_agree_rule": 0.946,
+  "teacher_missed_violations": "0/10"
+ }
+}

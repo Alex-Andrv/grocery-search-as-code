@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search as code</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafaf9;--card:#fff;--fg:#141413;--mut:#8a8984;--bd:#ecebe7;--a:#c2643b;--b:#178a63;--soft:#f3f2ef}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121211;--card:#1b1b1a;--fg:#f0efea;--mut:#8f8e88;--bd:#2a2927;--a:#e5895f;--b:#4fd1a1;--soft:#232321}}
+:root[data-theme=dark]{--bg:#121211;--card:#1b1b1a;--fg:#f0efea;--mut:#8f8e88;--bd:#2a2927;--a:#e5895f;--b:#4fd1a1;--soft:#232321}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 Inter,-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:1160px;margin:0 auto;padding:0 20px 64px;position:relative}
+.glow{position:absolute;inset:-80px 0 auto 0;height:520px;z-index:-1;pointer-events:none;background:radial-gradient(40% 50% at 35% 40%,color-mix(in srgb,var(--b) 22%,transparent),transparent 70%),radial-gradient(35% 45% at 68% 35%,color-mix(in srgb,var(--a) 18%,transparent),transparent 70%);filter:blur(30px)}
+.hero{text-align:center;margin:56px 0 0}
+.hero h1{font-size:clamp(30px,4.6vw,54px);line-height:1.04;letter-spacing:-.035em;font-weight:600;margin:0}
+.hero h1 span{background:linear-gradient(90deg,var(--b),color-mix(in srgb,var(--b) 55%,#2aa8d8));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mut);margin:12px 0 0;font-size:15.5px}
+.tourbtn{display:inline-flex;gap:8px;align-items:center;margin:2px auto 26px;background:var(--b);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:500;box-shadow:0 6px 24px color-mix(in srgb,var(--b) 35%,transparent);cursor:pointer;transition:transform .15s}
+.tourbtn:hover{transform:translateY(-1px)}
+.center{text-align:center}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+header b{font-weight:600}
+a{color:var(--mut);text-decoration:none}a:hover{color:var(--fg)}
+.search{max-width:720px;margin:32px auto 14px;backdrop-filter:blur(8px);display:flex;gap:6px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:6px;box-shadow:0 10px 40px rgba(0,0,0,.07)}
+.search input{flex:1;min-width:0;border:none;background:none;color:var(--fg);font:inherit;font-size:17px;padding:12px 12px;outline:none}
+select{border:none;background:var(--soft);color:var(--fg);font:inherit;font-size:13px;border-radius:10px;padding:0 8px;max-width:110px;flex:none}
+button{font:inherit;border:none;border-radius:10px;padding:10px 18px;cursor:pointer;background:var(--fg);color:var(--bg)}
+.chip.on{border-color:var(--b);color:var(--b);background:color-mix(in srgb,var(--b) 10%,var(--card))}
+#go[disabled]{opacity:.85;cursor:default}
+#go .sp{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:-1px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.qbadge{font-size:12px;color:var(--b);align-self:center;white-space:nowrap;padding:0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:760px;margin:0 auto 18px}
+.chip{font-size:13px;padding:5px 12px;border-radius:999px;background:color-mix(in srgb,var(--card) 70%,transparent);border:1px solid var(--bd);color:var(--mut);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--fg)}
+.chip:hover{color:var(--fg)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.col h2{font-size:13px;font-weight:500;color:var(--mut);margin:0;display:inline-flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--bd);border-radius:999px;padding:4px 12px}
+.dot{width:8px;height:8px;border-radius:50%}
+.big{font-size:44px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin:8px 0 0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+#t-ours{color:var(--b)}
+.ratio{font-size:13px;font-weight:600;letter-spacing:0;color:#fff;background:var(--b);border-radius:999px;padding:3px 10px;align-self:center}
+.big small{font-size:14px;font-weight:400;color:var(--mut);letter-spacing:0}
+.turn{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px 18px;margin-top:14px;animation:in .35s ease;box-shadow:0 2px 14px rgba(0,0,0,.03)}
+#c-ours .turn{border-color:color-mix(in srgb,var(--b) 35%,var(--bd))}
+@keyframes in{from{opacity:0;transform:translateY(4px)}}
+.q{font-size:13px;color:var(--mut)}
+.ans{margin:8px 0 14px;font-size:14.5px;line-height:1.55}
+.ans p{margin:0 0 6px}.ans ul,.ans ol{margin:4px 0 8px;padding-left:20px}.ans li{margin:2px 0}.ans b{font-weight:600}
+.meta{font-size:12.5px;color:var(--mut);margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.meta span{cursor:pointer;text-decoration:underline dotted}
+.wait{color:var(--mut);font-size:13px;font-variant-numeric:tabular-nums;margin-top:6px}
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.p{font-size:12px;line-height:1.3;transition:transform .15s}
+.p:hover{transform:translateY(-2px)}
+.p .im{position:relative;aspect-ratio:1;background:#fff;border-radius:14px;border:1px solid var(--bd);overflow:hidden;display:grid;place-items:center}
+.p .im::before{content:"🛒";font-size:26px;opacity:.25;grid-area:1/1}
+.p img{grid-area:1/1;width:100%;height:100%;object-fit:contain;padding:8px;background:#fff;position:relative}
+.p .pr{position:absolute;left:6px;bottom:6px;background:var(--fg);color:var(--bg);font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 8px}
+.p .n{margin-top:5px}
+.p .k{color:var(--mut)}
+pre{background:var(--soft);border-radius:10px;padding:10px;font-size:11.5px;white-space:pre-wrap;overflow:auto;margin:8px 0 0}
+.err{color:#d0453a;font-size:13px}
+.mem{font-size:12.5px;color:var(--mut);text-align:center;margin:-28px 0 28px;min-height:1em}
+.hints{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:1080px;margin:0 auto 40px}
+.hint{position:relative;background:color-mix(in srgb,var(--card) 80%,transparent);border:1px solid var(--bd);border-radius:16px;padding:14px 30px 14px 16px;font-size:13px;color:var(--mut);animation:in .3s ease}
+.hint i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;background:color-mix(in srgb,var(--b) 14%,transparent);color:var(--b);font-style:normal;font-weight:600;font-size:12px;margin-bottom:8px}
+.hint b{display:block;color:var(--fg);font-weight:500;margin-bottom:2px}
+.hint .x{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--mut);font-size:15px;line-height:1}
+.hint .x:hover{color:var(--fg)}
+.hl{cursor:pointer;margin-right:18px}
+@media (max-width:760px){.cols{grid-template-columns:1fr}.search{margin-top:24px}.hints{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main>
+<header><b>Search as code</b><span><a class="hl" id="hl">Подсказки</a><a href="/metrics">Метрики →</a></span></header>
+<div class="glow"></div>
+<section class="hero"><h1>Один запрос — два агента.<br><span>Наш пишет поиск кодом.</span></h1><p>Сравните расход токенов, скорость и качество ответа вживую</p></section>
+<form class="search" id="f"><select id="user" title="Покупатель"></select><input id="q" placeholder="всё для карбонары на четверых, без свинины" autocomplete="off"><span class="qbadge" id="qb"></span><button id="go">Найти</button></form>
+<div class="chips" id="chips"></div>
+<div class="center"><span class="tourbtn" onclick="startTour()">▶ Смотреть тур</span></div>
+<div class="hints" id="hints"></div>
+<div class="mem" id="mem"></div>
+<div class="cols">
+  <section class="col" id="c-base"><h2><span class="dot" style="background:var(--a)"></span>Обычный агент · tool calling</h2><div class="big" id="t-base">0 <small>токенов</small></div><div class="log"></div></section>
+  <section class="col" id="c-ours"><h2><span class="dot" style="background:var(--b)"></span>Search as code</h2><div class="big" id="t-ours">0 <small>токенов</small></div><div class="log"></div></section>
+</div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = n => Math.round(n).toLocaleString("ru-RU");
+let sid = null, tot = {base: 0, ours: 0}, day = 1;
+const LAST = {};   // последний ответ каждого агента (для тура)
+const HINTS = [
+  ["Программа вместо цепочки вызовов", "Агент пишет один план поиска, runtime исполняет его — модель не читает сотни карточек. Отсюда в разы меньше токенов."],
+  ["Поиск по смыслу, а не по словам", "Многовекторный MaxSim и дообученный двухбашенный энкодер: +42% nDCG к обычному ANN. Плюс поиск по фото."],
+  ["Состав проверяется по карточке", "QA-постфильтр сверяет каждый товар с условиями («веган», «без свинины») и цитирует состав — нарушители отсеиваются."],
+  ["Помнит покупателя", "Аллергии и предпочтения из истории, задачи по расписанию и слежение за ценой — без лишних вызовов LLM."]];
+const store = {get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }};
+function hints() {
+  const off = store.get("hints_off") || [];
+  $("#hints").innerHTML = HINTS.map((h, i) => off.includes(i) ? "" : `<div class="hint"><span class="x" data-i="${i}" title="Скрыть">×</span><i>${i + 1}</i><b>${esc(h[0])}</b>${esc(h[1])}</div>`).join("");
+  $("#hints").style.display = off.length === HINTS.length ? "none" : "";
+  document.querySelectorAll(".hint .x").forEach(x => x.onclick = () => { store.set("hints_off", [...off, +x.dataset.i]); hints(); });
+}
+$("#hl").onclick = () => { store.set("hints_off", []); hints(); };
+hints();
+fetch("/api/users").then(r => r.json()).then(us => { $("#user").innerHTML = us.map(u => `<option value="${u.id}" title="${esc(u.about)}">${esc(u.name)}</option>`).join(""); $("#user").value = "anna"; newDialog(); });
+fetch("/api/presets").then(r => r.json()).then(ps => {
+  $("#chips").innerHTML = ps.slice(0, 8).map(p => `<span class="chip">${esc(p.msg)}</span>`).join("");
+  document.querySelectorAll("#chips .chip").forEach(c => c.onclick = () => { document.querySelectorAll("#chips .chip").forEach(x => x.classList.toggle("on", x === c)); $("#q").value = c.textContent; send(); });
+});
+$("#user").onchange = newDialog;
+$("#f").onsubmit = e => { e.preventDefault(); send(); };
+async function newDialog() {
+  const r = await (await fetch("/api/new", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({user: $("#user").value})})).json();
+  sid = r.sid; tot = {base: 0, ours: 0}; day = 1;
+  for (const s of ["base", "ours"]) { $(`#c-${s} .log`).innerHTML = ""; $(`#t-${s}`).innerHTML = `0 <small>токенов</small>`; }
+  $("#mem").textContent = r.memory.length ? "Помнит: " + r.memory.join(" · ") : "";
+}
+function ratio() {
+  document.querySelectorAll(".ratio").forEach(e => e.remove());
+  if (!tot.base || !tot.ours || tot.ours >= tot.base) return;
+  $("#t-ours").insertAdjacentHTML("beforeend", `<span class="ratio">в ${(tot.base / tot.ours).toFixed(1)}× меньше</span>`);
+}
+function countTo(el, from, to) {
+  const t0 = performance.now();
+  const f = t => { const k = Math.min(1, (t - t0) / 700), v = from + (to - from) * (1 - Math.pow(1 - k, 3)); el.innerHTML = `${fmt(v)} <small>токенов</small>`; if (k < 1) requestAnimationFrame(f); };
+  requestAnimationFrame(f);
+}
+// очередь: пока агенты отвечают, новые запросы ждут; на каждый запрос сразу переводим к ответам
+let busy = null; const queue = [];
+function ui() {
+  $("#go").disabled = !!busy;
+  $("#go").innerHTML = busy ? '<span class="sp"></span>Ищем…' : "Найти";
+  $("#qb").textContent = queue.length ? `в очереди: ${queue.length}` : "";
+}
+function send(task = false) {
+  const q = task ? "" : ($("#q").value.trim() || $("#q").placeholder);
+  $("#q").value = "";
+  const job = () => runTurn(task, q);
+  const p = new Promise(res => queue.push(() => job().then(res)));
+  pump(); ui();
+  const y = $(".cols").getBoundingClientRect().top + scrollY - 16;
+  window.scrollTo({top: y, behavior: "smooth"});
+  setTimeout(() => { if (Math.abs(scrollY - y) > 40) window.scrollTo(0, y); }, 700);   // если плавная прокрутка не сработала — прыжком
+  return p;
+}
+async function pump() {
+  if (busy || !queue.length) return;
+  busy = queue.shift(); ui();
+  try { await busy(); } finally { busy = null; ui(); pump(); }
+}
+async function runTurn(task, q) {
+  const label = task ? "▶ задача по расписанию" : q, ph = {}, t0 = performance.now();
+  for (const s of ["base", "ours"]) { const d = document.createElement("div"); d.className = "turn"; d.innerHTML = `<div class="q">${esc(label)}</div><div class="wait">думает… 0.0 с</div>`; $(`#c-${s} .log`).prepend(d); ph[s] = d; }
+  const tick = setInterval(() => { for (const s of ["base", "ours"]) { const w = ph[s].querySelector(".wait"); if (w) w.textContent = `думает… ${((performance.now() - t0) / 1000).toFixed(1)} с`; } }, 100);
+  const d = task ? ++day : day;   // цены синтетические и зависят от дня: двигаем день только при запуске задачи
+  // каждый агент — отдельным запросом: ответ показываем, как только он готов, со своим временем
+  const one = async s => {
+    try {
+      const r = await (await fetch("/api/turn", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({sid, msg: q, run_task: task, day: d, side: s})})).json();
+      const x = r[s], wall = ((performance.now() - t0) / 1000).toFixed(1);
+      LAST[s] = {...(x || {}), wall: +wall};
+      ph[s].innerHTML = `<div class="q">${esc(label)} <span style="float:right">${wall} с</span></div>` + turnHtml(x, s);
+      if (x && x.usage) { const n = tot[s] + x.usage.in + x.usage.out; countTo($(`#t-${s}`), tot[s], n); tot[s] = n; setTimeout(ratio, 750); }
+      if (s === "ours") {
+        const o = x || {};
+        const extra = [...(o.memory && o.memory.length ? ["Помнит: " + o.memory.join(" · ")] : []), ...(o.tasks || []).map(t => "Задача: " + (t.when ? t.when + " — " : "") + t.what), ...(o.alerts || [])];
+        $("#mem").innerHTML = esc(extra.join("   ·   ")) + ((o.tasks || []).some(t => t.kind === "schedule") ? ` <span class="chip" id="run">▶ выполнить задачу</span>` : "");
+        if ($("#run")) $("#run").onclick = () => send(true);
+      }
+    } catch (e) { ph[s].innerHTML += `<p class="err">${esc(e)}</p>`; }
+  };
+  await Promise.all(["base", "ours"].map(one));
+  clearInterval(tick);
+}
+function md(t) {  // мини-markdown: **жирный**, списки, абзацы; коды товаров из текста убираем
+  t = (t || "").replace(/ВЫБОР\s*:.*$/s, "").replace(/код:?\s*\d{8,14}/gi, "").replace(/\b\d{8,14}\b,?\s*/g, "").replace(/\(\s*[,;—-]?\s*\)/g, "").replace(/\(\s*,\s*/g, "(").replace(/,\s*\)/g, ")").trim();
+  const out = []; let list = null;
+  for (let line of t.split("\n")) {
+    line = esc(line.trim()).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    const m = line.match(/^(?:[-•*]|\d+[.)])\s+(.*)/);
+    if (m) { if (!list) { list = []; } list.push(`<li>${m[1]}</li>`); continue; }
+    if (list) { out.push(`<ul>${list.join("")}</ul>`); list = null; }
+    if (line && !/^→/.test(line)) out.push(`<p>${line}</p>`); else if (line) out.push(`<p style="color:var(--mut);margin-top:-4px">${line}</p>`);
+  }
+  if (list) out.push(`<ul>${list.join("")}</ul>`);
+  return out.join("");
+}
+function turnHtml(x, s) {
+  if (!x || x.error) return `<p class="err">${esc(x && x.error)}</p>`;
+  const u = x.usage, id = "d" + Math.random().toString(36).slice(2);
+  const det = s === "ours" ? (x.trace || []).map(t => (t.program || "") + (t.error ? "\n// ошибка: " + t.error : "")).join("\n\n")
+                           : (x.trace || []).map(t => `${t.tool}(${JSON.stringify(t.args)})`).join("\n");
+  return `<div class="ans">${md(x.answer)}</div>
+    <div class="prods">${(x.products || []).filter(p => !p.missing).map(p => `<div class="p"><div class="im">${p.image ? `<img loading="lazy" src="${esc(p.image)}" alt="" onerror="this.remove()">` : ""}<span class="pr">${p.price} ₽</span></div><div class="n">${esc(p.name)}</div><div class="k">${esc(p.brand || "")}</div></div>`).join("")}</div>
+    <div class="meta">${fmt(u.in + u.out)} токенов · ${u.calls} вызовов LLM · ${u.sec.toFixed(1)} с <span onclick="document.getElementById('${id}').hidden^=1">${s === "ours" ? "программа" : "вызовы"}</span></div>
+    <pre id="${id}" hidden>${esc(det)}</pre>`;
+}
+</script>
+<script src="/tour.js"></script>
+</body>
+</html>

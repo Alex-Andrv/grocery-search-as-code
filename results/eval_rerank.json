@@ -1,0 +1,6 @@
+{
+ "reranker_zero_shot_ndcg10": 0.6025,
+ "reranker_ft_ndcg10": 0.8183,
+ "n_test": 452,
+ "n_train_pairs": 138304
+}

@@ -1,0 +1,11 @@
+{"n_queries": 452, "note": "тестовые синтетические запросы, разметка 0/1/2 учителем Qwen3-30B (тот же учитель размечал обучение)",
+ "methods": [
+  {"key": "bm25", "name": "BM25", "group": "base", "ndcg10": 0.450, "recall50": 0.466},
+  {"key": "dense", "name": "Dense BGE-M3 (ANN)", "group": "base", "ndcg10": 0.514, "recall50": 0.556},
+  {"key": "dense_hnsw", "name": "Dense BGE-M3, HNSW", "group": "base", "ndcg10": 0.511, "recall50": 0.546},
+  {"key": "image", "name": "Фото: SigLIP2", "group": "ours", "ndcg10": 0.350, "recall50": 0.240},
+  {"key": "maxsim", "name": "Многовекторный MaxSim, zero-shot", "group": "ours", "ndcg10": 0.535, "recall50": 0.534},
+  {"key": "maxsim_ft", "name": "MaxSim, дообученный", "group": "ours", "ndcg10": 0.711, "recall50": 0.671},
+  {"key": "dense_ft", "name": "Двухбашенный, дообученный", "group": "ours", "ndcg10": 0.721, "recall50": 0.689},
+  {"key": "hybrid", "name": "Гибрид: двухбашенный + MaxSim", "group": "ours", "ndcg10": 0.731, "recall50": 0.713}
+ ]}

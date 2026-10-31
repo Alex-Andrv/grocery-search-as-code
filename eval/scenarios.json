@@ -1,0 +1,39 @@
+[
+  {"id": "exact_parmesan", "user": "new", "turns": [{"msg": "сыр пармезан тёртый", "expect": {"kind": "answer", "slots": [["пармез"]]}}]},
+  {"id": "exact_milk_brand", "user": "new", "turns": [{"msg": "молоко Простоквашино 3,2%", "expect": {"kind": "answer", "slots": [["молоко"]], "brand": "простоквашино"}}]},
+  {"id": "exact_buckwheat", "user": "new", "turns": [{"msg": "гречка ядрица", "expect": {"kind": "answer", "slots": [["греч"]]}}]},
+  {"id": "cond_yogurt_sugar", "user": "new", "turns": [{"msg": "йогурт, где меньше 5 г сахара на 100 г", "expect": {"kind": "answer", "slots": [["йогурт"]], "cond": {"max_sugar": 5}}}]},
+  {"id": "cond_tvorog", "user": "new", "turns": [{"msg": "творог, белка больше 15 г и жирность до 5%", "expect": {"kind": "answer", "slots": [["творог"]], "cond": {"min_protein": 15, "max_fat": 5}}}]},
+  {"id": "cond_gluten", "user": "new", "turns": [{"msg": "печенье без глютена", "expect": {"kind": "answer", "slots": [["печен"]], "cond": {"allergen_free": ["gluten"]}}}]},
+  {"id": "memory_pork", "user": "anna", "turns": [{"msg": "колбаса или сосиски", "expect": {"kind": "answer", "slots": [["колбас", "сосис", "сардел"]], "cond": {"exclude": ["свин", "бекон"]}}}]},
+  {"id": "memory_nuts_kids", "user": "semya", "turns": [{"msg": "что-нибудь к чаю детям", "expect": {"kind": "answer", "cond": {"allergen_free": ["nuts", "peanuts"]}}}]},
+  {"id": "memory_vegan_choc", "user": "vegan", "turns": [{"msg": "шоколадку", "expect": {"kind": "answer", "slots": [["шокол"]], "cond": {"allergen_free": ["milk"]}}}]},
+  {"id": "basket_carbonara", "user": "new", "turns": [
+    {"msg": "всё для карбонары на четверых, без свинины", "expect": {"kind": "answer", "slots": [["спагет", "паста", "макарон"], ["пармез", "сыр"], ["яйц"]], "cond": {"exclude": ["свин", "бекон", "гуанчал"]}}},
+    {"msg": "а что из этого дешевле всего?", "expect": {"kind": "reply", "no_search": true}}]},
+  {"id": "basket_pancakes", "user": "new", "turns": [{"msg": "ингредиенты для блинов", "expect": {"kind": "answer", "slots": [["мук"], ["молоко"], ["яйц"], ["сахар"]]}}]},
+  {"id": "basket_greek", "user": "anna", "turns": [
+    {"msg": "продукты для греческого салата", "expect": {"kind": "answer", "slots": [["огур"], ["томат", "помид"], ["фета", "сыр"], ["маслин", "оливк"]]}},
+    {"msg": "сколько это всё стоит?", "expect": {"kind": "reply", "no_search": true}}]},
+  {"id": "basket_plov", "user": "new", "turns": [{"msg": "собери продукты на плов с курицей", "expect": {"kind": "answer", "slots": [["рис"], ["куриц"], ["морков"], ["лук"]]}}]},
+  {"id": "basket_picnic_gluten", "user": "new", "turns": [{"msg": "набор для пикника на троих без глютена", "expect": {"kind": "answer", "cond": {"allergen_free": ["gluten"]}}}]},
+  {"id": "broad_movie_personal", "user": "anna", "turns": [{"msg": "что-нибудь вкусненькое к кино", "expect": {"kind": "answer", "cond": {"exclude": ["свин"]}}}]},
+  {"id": "broad_breakfast_kids", "user": "semya", "turns": [{"msg": "что взять на завтрак детям", "expect": {"kind": "answer", "cond": {"allergen_free": ["nuts", "peanuts"]}}}]},
+  {"id": "broad_snack_vegan", "user": "vegan", "turns": [{"msg": "перекус на работу", "expect": {"kind": "answer", "cond": {"allergen_free": ["milk", "eggs"]}}}]},
+  {"id": "broad_gift_image", "user": "new", "turns": [{"msg": "что-нибудь сладкое в яркой красивой упаковке в подарок", "expect": {"kind": "answer"}}]},
+  {"id": "clarify_empty", "user": "new", "turns": [{"msg": "собери мне корзину", "expect": {"kind": "clarify"}}]},
+  {"id": "remember_then_use", "user": "new", "turns": [
+    {"msg": "запомни, пожалуйста: я не ем свинину", "expect": {"side": "запомнил"}},
+    {"msg": "пельмени", "expect": {"kind": "answer", "slots": [["пельм"]], "cond": {"exclude": ["свин"]}}}]},
+  {"id": "forget_allergy", "user": "semya", "turns": [
+    {"msg": "аллергии на орехи больше нет, забудь об этом", "expect": {"side": "забыл"}}]},
+  {"id": "schedule_lunch", "user": "anna", "turns": [
+    {"msg": "каждый будний день к 13:00 собирай мне обед около 600 ккал, побольше белка", "expect": {"side": "задача", "kind": "answer"}},
+    {"run_task": true, "day": 1, "expect": {"kind": "answer", "cond": {"exclude": ["свин"]}, "kcal_total": [450, 800]}},
+    {"run_task": true, "day": 2, "expect": {"kind": "answer", "cond": {"exclude": ["свин"]}, "kcal_total": [450, 800], "no_repeat": true}}]},
+  {"id": "watch_price", "user": "new", "turns": [
+    {"msg": "сообщи, когда тёртый пармезан будет дешевле 500 рублей", "expect": {"side": "слежу"}}]},
+  {"id": "followup_refine", "user": "new", "turns": [
+    {"msg": "греческий йогурт", "expect": {"kind": "answer", "slots": [["йогурт"]]}},
+    {"msg": "а есть такой же, но без сахара?", "expect": {"kind": "answer", "slots": [["йогурт"]], "cond": {"max_sugar": 5}}}]}
+]
